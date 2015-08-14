@@ -5,37 +5,14 @@ date: "August 7, 2015"
 output: html_document
 ---
 
-Introduction
-
-It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the "quantified self" movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
-
-This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
-
-Data
-
-The data for this assignment can be downloaded from the course web site:
-
-Dataset: Activity monitoring data [52K]
-The variables included in this dataset are:
-
-steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
-
-date: The date on which the measurement was taken in YYYY-MM-DD format
-
-interval: Identifier for the 5-minute interval in which measurement was taken
-
-The dataset is stored in a comma-separated-value (CSV) file and there are a total of 17,568 observations in this dataset.
-
-This Markdown File will now go through the steps required for this assignement including operations and plotting
-
 Before Anything: Prepare Global Enviornment 
 ```{r tidy=FALSE}
 library(knitr)
 library(data.table)
+library(Hmisc)
 library(ggplot2)
 library(lattice)
 opts_chunk$set(echo = TRUE, results = 'hold')       
-#Define Text results. Echo all results and hold output pieces and push them                             to end of chunk
 
 ```
 
@@ -43,8 +20,6 @@ opts_chunk$set(echo = TRUE, results = 'hold')
 
     A) Load in the activity.csv Data and Read into a dataframe
 ```{r tidy=FALSE}
-#url <- "hf bcfttps://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip "
-#download.file(url, destfile = activity.csv )
 activitydata<-read.csv("activity.csv", header = TRUE, sep = ",", 
 colClasses = c("numeric","character","numeric"))
 ```
@@ -53,41 +28,31 @@ colClasses = c("numeric","character","numeric"))
 ```{r}
     str(activitydata)
 ```
-    
+
     C) Tidy the data frames date and interval field 
 ```{r}
-    #Make the date field a date object.  
-    activitydata$date <- as.POSIXlt(activitydata$date)
+    activitydata$date <- as.Date(activitydata$date)
 ```
+    
 
 2. What is mean total number of steps taken per day?
 
     A) Calculate the sum of the total steps per day
 ```{r}
-    #First aggregate the steps by data in the data, with the function sum
-    #Make new data frame with steps per day 
-    Total_steps_day <- aggregate(activitydata$steps, by=list(activitydata$date), FUN=sum, na.rm = TRUE)
+    Total_steps_day <- aggregate(steps ~ date, data = activitydata, sum, na.rm = TRUE)
     colnames(Total_steps_day ) <- c("date","steps")
     head(Total_steps_day,10)
 ```
     
     B) Histogram: Total Number of Steps per day with missing values included  
 ```{r tidy=FALSE}
-    ggplot(Total_steps_day, aes(x = steps)) +
-    geom_histogram(col= "black",bindwidth = 1000) +
-    ggtitle("Activity: Steps per Day") + 
+    ggplot(Total_steps_day, aes_string(x = "steps")) +
+    geom_histogram(col= "black",bindwidth = 1000, fill ="orange") +
+    ggtitle("Activity Histogram: Steps per Day (Missing Values Removed") + 
     xlab("Number of Steps per Day") + 
     ylab("Number of times in day(Count)")
 ```
 
-hist(Total_steps_day$steps,
-     breaks=seq(from=0, to=25000, by=2500),
-     col="black", 
-     xlab="Number of Steps Per Day", 
-     ylab="Number of times in day(Count)",
-     ylim=c(0, 20), 
-     main="Histogram of the total number of steps taken each day\n(NA removed)")
-  
     C) Report the mean and median of the total number of steps taken per day
 ```{r}
     Total_steps_mean <- mean(Total_steps_day$steps, na.rm = TRUE)
@@ -133,36 +98,22 @@ hist(Total_steps_day$steps,
     B) Make new dataset with NA filled in
        Solution:Replace missing values with average steps per interval from time_seris plot
 ```{r}
-    #Make a new data frame for the Activity with NA
 Filled_Data <- activitydata
-head(Filled_Data,10) #Compare Data with NA 
-for(i in 1:nrow(Filled_Data)) {
-    if(is.na(Filled_Data$steps[i])) {
-        replace <- time_series$steps[time_series$interval == Filled_Data$interval[i]];
-        Filled_Data$steps[i] <- replace;
-    }
-}
-    
+Filled_Data$steps <- impute(activitydata$steps, fun=mean)
 head(Filled_Data,10)           #Compare Data without NA
 sum(is.na(Filled_Data$steps))  #Check if any NA left in Dataset
 ```
 
     C) Histogram: Total Number of Steps per day with missing values filled (replaced) 
 ```{r tidy=FALSE}
-    steps_day_NA <- aggregate(Filled_Data$steps, by=list(Filled_Data$date), FUN = sum)
-    colnames(steps_day_NA) <- c("date","steps")
-
-    ggplot(steps_day_NA, aes(x = steps)) + 
-    geom_histogram(color = "black",bindwidth = x, fill= "blue") + 
-    ggtitle("Activity: Steps per Day (Data with missing values filled/replaced)") + 
-    xlab("Number of Steps per Day") + 
-    ylab("Number of times in day(Count)")
+    steps_day_NA <- tapply(Filled_Data$steps, Filled_Data$date, sum)
+    qplot(steps_day_NA, xlab='Total steps per day (Imputed)', ylab='Frequency using binwith 500', binwidth=500)
 ```
     
     D) Report the Mean and Median Total: Total Steps Per Day
 ```{r}
-Total_steps_mean_NA <- mean(steps_day_NA$steps, na.rm = TRUE)
-Total_steps_median_NA <- median(steps_day_NA$steps, na.rm = TRUE)
+Total_steps_mean_NA <- mean(steps_day_NA)
+Total_steps_median_NA <- median(steps_day_NA)
 Total_steps_mean_NA
 Total_steps_median_NA
 ```

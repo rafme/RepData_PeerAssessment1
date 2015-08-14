@@ -5,13 +5,13 @@ date: "August 7, 2015"
 output: html_document
 ---
 
-#Introduction
+Introduction
 
 It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the "quantified self" movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
 
 This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
 
-##Data
+Data
 
 The data for this assignment can be downloaded from the course web site:
 
@@ -33,22 +33,7 @@ Before Anything: Prepare Global Enviornment
 ```r
 library(knitr)
 library(data.table)
-```
-
-```
-## data.table 1.9.4  For help type: ?data.table
-## *** NB: by=.EACHI is now explicit. See README to restore previous behaviour.
-```
-
-```r
 library(ggplot2)
-```
-
-```
-## Need help? Try the ggplot2 mailing list: http://groups.google.com/group/ggplot2.
-```
-
-```r
 library(lattice)
 opts_chunk$set(echo = TRUE, results = 'hold')       
 #Define Text results. Echo all results and hold output pieces and push them                             to end of chunk
@@ -57,15 +42,6 @@ opts_chunk$set(echo = TRUE, results = 'hold')
 1. Loading and preprocessing the data
 
     A) Load in the activity.csv Data and Read into a dataframe
-
-```r
-url <- "hf bcfttps://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip "
-download.file(url, destfile = activity.csv )
-```
-
-```
-## Error in download.file(url, destfile = activity.csv): object 'activity.csv' not found
-```
 
 ```r
 activitydata<-read.csv("activity.csv", header = TRUE, sep = ",", 
